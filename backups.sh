@@ -1,7 +1,7 @@
 #!/bin/bash
 
 # Assign variables 
-BACKUP_DIRS="/root /home /usr /mnt /app /media /var/log /var/lib /var/local /pol"
+BACKUP_DIRS="/root /home /usr /mnt /app /media /var/log /var/lib /var/local /var/backups /var/opt /pol"
 BACKUP_LOCATION="/backup"
 BACKUP_LOG="/var/log/backup.log"
 TIMESTAMP=$(date +%m-%d-%Y_%H:%M:%S)
