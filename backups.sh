@@ -4,7 +4,7 @@
 BACKUP_DIRS="/root /home /usr /mnt /app /media /var/log /var/lib /var/local /var/backups /var/opt /pol"
 BACKUP_LOCATION="/backup"
 BACKUP_LOG="/var/log/backup.log"
-TIMESTAMP=$(date +%m-%d-%Y_%H:%M:%S)
+TIMESTAMP=$(date +%m-%d-%Y)
 # Create backup directory
 mkdir -p "$BACKUP_LOCATION"
 # Clear existing logs
@@ -20,7 +20,7 @@ echo "$TIMESTAMP removing backup of $DIRECTORY." | tee -a "$BACKUP_LOG"
 # Log backups
 echo "$TIMESTAMP Backing up $DIRECTORY to $BACKUP_FILE" | tee -a "$BACKUP_LOG"
 # Perform backups
-tar --exclude */docker* -czf "$BACKUP_FILE" "$DIRECTORY" 2>&1 | tee -a "$BACKUP_LOG"
+tar --exclude '*/docker*' -czf "$BACKUP_FILE" "$DIRECTORY" 2>&1 | tee -a "$BACKUP_LOG"
     # Check for successful backup
     if [ $? = 0 ]; then
         echo "$TIMESTAMP Backup of $DIRECTORY successful." | tee -a "$BACKUP_LOG"
