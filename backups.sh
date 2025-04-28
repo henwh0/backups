@@ -18,12 +18,12 @@ echo "Removing old backups, time: $TIMESTAMP." | tee -a "$BACKUP_LOG"
 find "$BACKUP_LOCATION" -type f -name "$DIRECTORY_NAME-*.tar.gz" -delete
 echo "$TIMESTAMP removing backup of $DIRECTORY." | tee -a "$BACKUP_LOG"
 # Log backups
-echo "$TIMESTAMP Backing up $DIRECTORY to $BACKUP_FILE" | tee -a "$BACKUP_LOG"
+echo "Backing up $DIRECTORY to $BACKUP_FILE" | tee -a "$BACKUP_LOG"
 # Perform backups
 tar --exclude '*/docker*' -czf "$BACKUP_FILE" "$DIRECTORY" 2>&1 | tee -a "$BACKUP_LOG"
     # Check for successful backup
     if [ $? = 0 ]; then
-        echo "$TIMESTAMP Backup of $DIRECTORY successful." | tee -a "$BACKUP_LOG"
+        echo " $TIMESTAMP Backup of $DIRECTORY successful." | tee -a "$BACKUP_LOG"
     else
         echo "$TIMESTAMP Backup of $DIRECTORY unsuccessful." | tee -a "$BACKUP_LOG"
     fi
