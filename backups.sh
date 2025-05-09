@@ -1,33 +1,51 @@
 #!/bin/bash
 
+# Exit on error, undefined var, or pipefail
+set -euo pipefail
+
 # Assign variables 
 BACKUP_DIRS="/root /home /usr /mnt /app /media /var/log /var/lib /var/local /var/backups /var/opt /pol"
 BACKUP_LOCATION="/backup"
 BACKUP_LOG="/var/log/backup.log"
 TIMESTAMP=$(date +%m-%d-%Y)
-# Create backup directory
+
+# Ensure backup directory exists
 mkdir -p "$BACKUP_LOCATION"
-# Clear existing logs
+
+# Clear and initialize log
 > "$BACKUP_LOG"
+echo "======================================" | tee -a "$BACKUP_LOG"
+echo "$TIMESTAMP Starting backup process" | tee -a "$BACKUP_LOG"
+echo "======================================" | tee -a "$BACKUP_LOG"
+
+# Remove all old backups once before starting
+echo "$TIMESTAMP Removing all old backups in $BACKUP_LOCATION" | tee -a "$BACKUP_LOG"
+find "$BACKUP_LOCATION" -maxdepth 1 -type f -name "*.tar.gz" -delete
+
 # Loop through each directory
 for DIRECTORY in $BACKUP_DIRS; do
-DIRECTORY_NAME=$(basename "$DIRECTORY")
-BACKUP_FILE="$BACKUP_LOCATION/$DIRECTORY_NAME-$TIMESTAMP.tar.gz"
-# Remove old backups
-echo "Removing old backups, time: $TIMESTAMP." | tee -a "$BACKUP_LOG"
-find "$BACKUP_LOCATION" -type f -name "$DIRECTORY_NAME-*.tar.gz" -delete
-echo "$TIMESTAMP removing backup of $DIRECTORY." | tee -a "$BACKUP_LOG"
-# Log backups
-echo "Backing up $DIRECTORY to $BACKUP_FILE" | tee -a "$BACKUP_LOG"
-# Perform backups
-tar --exclude '*/docker*' -czf "$BACKUP_FILE" "$DIRECTORY" 2>&1 | tee -a "$BACKUP_LOG"
-    # Check for successful backup
-    if [ $? = 0 ]; then
-        echo " $TIMESTAMP Backup of $DIRECTORY successful." | tee -a "$BACKUP_LOG"
+    DIRECTORY_NAME=$(basename "$DIRECTORY")
+    BACKUP_FILE="$BACKUP_LOCATION/$DIRECTORY_NAME-$TIMESTAMP.tar.gz"
+
+    echo "--------------------------------------" | tee -a "$BACKUP_LOG"
+    echo "$TIMESTAMP Backing up $DIRECTORY" | tee -a "$BACKUP_LOG"
+
+    # Check if directory exists
+    if [ -d "$DIRECTORY" ]; then
+        # Perform backup
+        tar --exclude='*/docker/*' -czf "$BACKUP_FILE" "$DIRECTORY" 2>&1 | tee -a "$BACKUP_LOG"
+
+        # Check for success
+        if [ $? -eq 0 ]; then
+            echo "$TIMESTAMP Backup of $DIRECTORY successful." | tee -a "$BACKUP_LOG"
+        else
+            echo "$TIMESTAMP Backup of $DIRECTORY failed." | tee -a "$BACKUP_LOG"
+        fi
     else
-        echo "$TIMESTAMP Backup of $DIRECTORY unsuccessful." | tee -a "$BACKUP_LOG"
+        echo "$TIMESTAMP Warning: $DIRECTORY does not exist or is not a directory." | tee -a "$BACKUP_LOG"
     fi
 done
 
-echo "$TIMESTAMP Backups complete, check $BACKUP_LOG." | tee -a "$BACKUP_LOG"
-
+echo "======================================" | tee -a "$BACKUP_LOG"
+echo "$TIMESTAMP All backups complete. Check log at $BACKUP_LOG" | tee -a "$BACKUP_LOG"
+echo "======================================" | tee -a "$BACKUP_LOG"
