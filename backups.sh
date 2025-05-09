@@ -33,7 +33,7 @@ for DIRECTORY in $BACKUP_DIRS; do
     # Check if directory exists
     if [ -d "$DIRECTORY" ]; then
         # Perform backup
-        tar --exclude='*/docker/*' -czf "$BACKUP_FILE" "$DIRECTORY" 2>&1 | tee -a "$BACKUP_LOG"
+        tar --exclude='*/docker/*' -cf - "$DIRECTORY" | pv -s $(du -sb "$DIRECTORY" | awk '{print $1}') | gzip > "$BACKUP_FILE" | tee -a "$BACKUP_LOG"
 
         # Check for success
         if [ $? -eq 0 ]; then
